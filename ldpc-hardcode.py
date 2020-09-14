@@ -15,9 +15,11 @@ def RandomizedInputWord (alphabet, N):
         result_list.append(bit)
     return np.array(result_list)
 
-def ChannelWord(word):
-    # channel probability noise to be implemented
-    return word
+def ChannelWord(word, prob):
+    result = []
+    for bit in word:
+        result.append(np.random.choice( [bit,Bitflip(bit)], p=[1-prob,prob]) )
+    return np.array(result)
 
 
 # Input word (transmitter)
@@ -34,7 +36,7 @@ coder_word = iword
 
 # Channel
 x = coder_word
-y = ChannelWord(x)
+y = ChannelWord(x, 0.05)
 
 
 # Decoder
