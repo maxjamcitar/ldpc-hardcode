@@ -22,28 +22,43 @@ def BinarySymmetricalChannelWord(word, prob):
     return np.array(result)
 
 
+def CompareWordsPercent(iword, oword):
+    N = iword.shape[0]
+    #if iword.shape[0] != oword.shape[0]:
+        # then what? change N or error?
+    correctBits = 0
+    for i in range(N):
+        if iword[i] == oword[i]:
+          correctBits += 1
+    return correctBits / float(N)
+
+
 # Input word (transmitter)
 alphabet = [0, 1]
 #iword_debug = np.array( [alphabet[1], alphabet[0], alphabet[1], alphabet[1]] )
 #iword = iword_debug   # input word
-iword_release = RandomizedInputWord(alphabet, 10)
+iword_release = RandomizedInputWord(alphabet, 16)
 iword = iword_release   # input word
+print(f"Sent word:\t{iword}")
 
 
 # Coder
 # LDPC to be implemented
 coder_word = iword  # transmitter->coder
+print(f"Coded word:\t{coder_word}")
 
 
 # Channel
 channelBitflipProb = 0.25  # probability of a bit to flip because of channel noise
 x = coder_word  # coder->channel
 y = BinarySymmetricalChannelWord(x, channelBitflipProb)
+print(f"Channel noise:\t{y} ({int(100-np.round(CompareWordsPercent(coder_word, y)*100))}% bitflip)")
 
 
 # Decoder
 # LDPC hard-decision decoder to be implemented
 decoded_word = y    # channel->decoder
+print(f"Decoded word:\t{y}")
 
 
 # Receiver
@@ -51,6 +66,6 @@ oword = decoded_word    # decoder->receiver
 
 
 # Result comparison
-print(f"Sent word:\t{iword}")
 print(f"Received word:\t{oword}")
-# Correct rate to be implemented
+io_match_rate = CompareWordsPercent(iword, oword)
+print(f"Success rate:\t{int(np.round(io_match_rate*100))}%")
