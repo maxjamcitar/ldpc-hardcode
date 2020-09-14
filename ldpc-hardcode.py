@@ -32,22 +32,22 @@ iword = iword_release   # input word
 
 # Coder
 # LDPC to be implemented
-coder_word = iword
+coder_word = iword  # transmitter->coder
 
 
 # Channel
 channelBitflipProb = 0.25  # probability of a bit to flip because of channel noise
-x = coder_word
+x = coder_word  # coder->channel
 y = BinarySymmetricalChannelWord(x, channelBitflipProb)
 
 
 # Decoder
 # LDPC hard-decision decoder to be implemented
-decoded_word = y
+decoded_word = y    # channel->decoder
 
 
 # Receiver
-oword = decoded_word
+oword = decoded_word    # decoder->receiver
 
 
 # Result comparison
