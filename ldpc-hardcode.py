@@ -24,9 +24,10 @@ def BinarySymmetricalChannelWord(word, prob):
 
 # Input word (transmitter)
 alphabet = [0, 1]
-iword_debug = np.array( [alphabet[1], alphabet[0], alphabet[1], alphabet[1]] )
-#iword_release = RandomizedInputWord(alphabet, 64)
-iword = iword_debug   # input word
+#iword_debug = np.array( [alphabet[1], alphabet[0], alphabet[1], alphabet[1]] )
+#iword = iword_debug   # input word
+iword_release = RandomizedInputWord(alphabet, 10)
+iword = iword_release   # input word
 
 
 # Coder
@@ -35,7 +36,7 @@ coder_word = iword
 
 
 # Channel
-channelBitflipProb = 0.1  # probability of a bit to flip because of channel noise
+channelBitflipProb = 0.25  # probability of a bit to flip because of channel noise
 x = coder_word
 y = BinarySymmetricalChannelWord(x, channelBitflipProb)
 
@@ -50,6 +51,6 @@ oword = decoded_word
 
 
 # Result comparison
-print(f"Sent word: {iword}")
-print(f"Received word: {oword}")
+print(f"Sent word:\t{iword}")
+print(f"Received word:\t{oword}")
 # Correct rate to be implemented
