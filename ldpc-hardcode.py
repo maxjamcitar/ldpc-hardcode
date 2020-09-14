@@ -15,7 +15,7 @@ def RandomizedInputWord (alphabet, N):
         result_list.append(bit)
     return np.array(result_list)
 
-def ChannelWord(word, prob):
+def BinarySymmetricalChannelWord(word, prob):
     result = []
     for bit in word:
         result.append(np.random.choice( [bit,Bitflip(bit)], p=[1-prob,prob]) )
@@ -35,8 +35,9 @@ coder_word = iword
 
 
 # Channel
+channelBitflipProb = 0.1  # probability of a bit to flip because of channel noise
 x = coder_word
-y = ChannelWord(x, 0.05)
+y = BinarySymmetricalChannelWord(x, channelBitflipProb)
 
 
 # Decoder
