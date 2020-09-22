@@ -22,10 +22,10 @@ def BinarySymmetricalChannelWord(word, prob):
     return np.array(result)
 
 
-def CompareWordsPercent(iword, oword):
-    N = iword.shape[0]
+def CompareWordsFraction(iword, oword):
+    N = np.amax([iword.shape[0], oword.shape[0]])
     #if iword.shape[0] != oword.shape[0]:
-        # then what? change N or error?
+        # so what?
     correctBits = 0
     for i in range(N):
         if iword[i] == oword[i]:
@@ -70,8 +70,7 @@ def BitFlippingLDPCDecoding(word, H):
         codewordParityFails = np.zeros_like(word)
         for rowIndex in parityFailsRows:
             ones = np.where(H[rowIndex] == 1)[0] # Tanner graph lines (downwards)
-            for oneIndex in ones:
-                codewordParityFails[oneIndex] += 1
+            codewordParityFails[ones] += 1
         bitFlipIndex = np.where(codewordParityFails == np.amax(codewordParityFails))[0][0]  # first max
         result_word[bitFlipIndex] = Bitflip(result_word[bitFlipIndex])
     return result_word
@@ -88,10 +87,9 @@ channelBitflipProb = 0.1  # probability of a bit to flip because of channel nois
 
 # Input word (transmitter)
 alphabet = [0.0, 1.0]
-#iword_debug = np.full(10, alphabet[0])
-#word = iword_debug   # input word
-iword_release = RandomizedInputWord(alphabet, 10)
-iword = iword_release   # input word
+inputWordSize = 10
+#iword = np.full(inputWordSize, alphabet[0])   # debug input word
+iword = RandomizedInputWord(alphabet, inputWordSize)   # release input word
 print(f"Sent word:\t{iword}")
 
 n0 = 5  # H: ones per row
@@ -115,7 +113,7 @@ print(f"Encoded word:\t{word_encoded}")
 # Channel
 x_chan = word_encoded  # encoder->channel
 y_chan = BinarySymmetricalChannelWord(x_chan, channelBitflipProb)   # noisy channel
-print(f"Channel noise:\t{y_chan} ({int(100-np.round(CompareWordsPercent(word_encoded, y_chan)*100))}% bitflip)")
+print(f"Channel noise:\t{y_chan} ({int(100-np.round(CompareWordsFraction(word_encoded, y_chan)*100))}% bitflip)")
 
 
 # Decoder
@@ -131,5 +129,5 @@ oword = word_decoded[0:k_bits]    # decoder->receiver
 
 # Result comparison
 print(f"Received word:\t{oword}")
-io_match_rate = CompareWordsPercent(iword, oword)
+io_match_rate = CompareWordsFraction(iword, oword)
 print(f"Success rate:\t{int(np.round(io_match_rate*100))}%")
