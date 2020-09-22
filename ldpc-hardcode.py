@@ -88,8 +88,8 @@ channelBitflipProb = 0.1  # probability of a bit to flip because of channel nois
 
 # Input word (transmitter)
 alphabet = [0.0, 1.0]
-#iword_debug = np.array( [alphabet[1], alphabet[0], alphabet[1], alphabet[1]] )
-#iword = iword_debug   # input word
+#iword_debug = np.full(10, alphabet[0])
+#word = iword_debug   # input word
 iword_release = RandomizedInputWord(alphabet, 10)
 iword = iword_release   # input word
 print(f"Sent word:\t{iword}")
