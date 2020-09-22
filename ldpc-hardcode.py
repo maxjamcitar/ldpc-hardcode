@@ -72,7 +72,7 @@ def BitFlippingLDPCDecoding(word, H):
             ones = np.where(H[rowIndex] == 1)[0] # Tanner graph lines (downwards)
             for oneIndex in ones:
                 codewordParityFails[oneIndex] += 1
-        bitFlipIndex = np.where(codewordParityFails == np.amax(codewordParityFails))
+        bitFlipIndex = np.where(codewordParityFails == np.amax(codewordParityFails))[0][0]  # first max
         result_word[bitFlipIndex] = Bitflip(result_word[bitFlipIndex])
     return result_word
 
@@ -106,9 +106,9 @@ H = LDPCCheckingMatrix(n0, l, m, bl)
 
 # Encoder
 word_encoded = iword  # transmitter->encoder
-# I actually need to encode it. But more on that later...
+# todo: proper encoding
 encodedWordPiece = np.zeros(n_cwl - k_bits)
-word_encoded = np.append(word_encoded, encodedWordPiece)
+word_encoded = np.append(word_encoded, encodedWordPiece)    # placeholder codeword
 print(f"Encoded word:\t{word_encoded}")
 
 
