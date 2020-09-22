@@ -50,53 +50,83 @@ def LDPCCheckingMatrix(n0, l, m, bl):
 # binary vector with randomly placed n_ones ones ('pi')
 def RandomizedSparseOnesVector(size, n_ones):
     result = np.zeros(size)
-    result[0:n_ones] = 1
+    result[0:n_ones] = 1.0
     np.random.shuffle(result)
     return result
 
 
+def BitFlippingLDPCDecoding(word, H):
+    result_word = np.copy(word)
+    isDecodingOver = False
+    max_iterations = 100
+    for i_iter in range(max_iterations):
+        parityFailsRows = []    # indices of H rows with failed parity check
+        for rowIndex, row in enumerate(H):
+            bdp = BinaryDotProduct(row, result_word)
+            if bdp != 0:
+                parityFailsRows.append(rowIndex)
+        if len(parityFailsRows) == 0:
+            break   # all parity checks are satisfied
+        codewordParityFails = np.zeros_like(word)
+        for rowIndex in parityFailsRows:
+            ones = np.where(H[rowIndex] == 1)[0] # Tanner graph lines (downwards)
+            for oneIndex in ones:
+                codewordParityFails[oneIndex] += 1
+        bitFlipIndex = np.where(codewordParityFails == np.amax(codewordParityFails))
+        result_word[bitFlipIndex] = Bitflip(result_word[bitFlipIndex])
+    return result_word
+
+
+def BinaryDotProduct(row, word):
+    if row.ndim != 1 or word.ndim != 1:
+        raise(Exception("Multidimensional array in a vector dot product function"))
+    alphabetModule = 2
+    return np.dot(row, word) % alphabetModule
+
+
+channelBitflipProb = 0.1  # probability of a bit to flip because of channel noise
 
 # Input word (transmitter)
-alphabet = [0, 1]
+alphabet = [0.0, 1.0]
 #iword_debug = np.array( [alphabet[1], alphabet[0], alphabet[1], alphabet[1]] )
 #iword = iword_debug   # input word
-iword_release = RandomizedInputWord(alphabet, 16)
+iword_release = RandomizedInputWord(alphabet, 10)
 iword = iword_release   # input word
 print(f"Sent word:\t{iword}")
 
-k_bits = iword.shape[0] # G: number of information bits
-n_cwl = k_bits + 100    # G: CodeWord Length
 n0 = 5  # H: ones per row
 l = 3   # H: one-stacks 
 m = 3   # H: rows in a block
 bl = 3  # H: H0 blocks
+k_bits = iword.shape[0] # G: number of information bits
+n_cwl = n0*l    # G: CodeWord Length
 # G = ? How...
 H = LDPCCheckingMatrix(n0, l, m, bl)
 
 
 # Encoder
-word_encoder = iword  # transmitter->encoder
+word_encoded = iword  # transmitter->encoder
 # I actually need to encode it. But more on that later...
-print(f"Encoded word:\t{word_encoder}")
+encodedWordPiece = np.zeros(n_cwl - k_bits)
+word_encoded = np.append(word_encoded, encodedWordPiece)
+print(f"Encoded word:\t{word_encoded}")
 
 
 # Channel
-channelBitflipProb = 0.1  # probability of a bit to flip because of channel noise
-x_chan = word_encoder  # encoder->channel
-y_chan = BinarySymmetricalChannelWord(x_chan, channelBitflipProb)
-print(f"Channel noise:\t{y_chan} ({int(100-np.round(CompareWordsPercent(word_encoder, y_chan)*100))}% bitflip)")
+x_chan = word_encoded  # encoder->channel
+y_chan = BinarySymmetricalChannelWord(x_chan, channelBitflipProb)   # noisy channel
+print(f"Channel noise:\t{y_chan} ({int(100-np.round(CompareWordsPercent(word_encoded, y_chan)*100))}% bitflip)")
 
 
 # Decoder
-print(H)
-# c*H.T = 0 check
-# majority decoding thing
 word_decoded = y_chan    # channel->decoder
+word_decoded = BitFlippingLDPCDecoding(word_decoded, H)
 print(f"Decoded word:\t{word_decoded}")
 
 
 # Receiver
-oword = word_decoded    # decoder->receiver
+# do we know k_bits at this point?
+oword = word_decoded[0:k_bits]    # decoder->receiver
 
 
 # Result comparison
